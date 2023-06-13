@@ -22,7 +22,7 @@ Wait for the python application to initialize.
 
 ## Ask your questions
 In your browser, navigate to the webpage: http://localhost:5000.
-Type your question into the text box and click "Query".
+Type your question into the text box and click "Run Query".
 The privateGPT base application takes a while to create an answer. The web interface shows a timer while
 the AI creates its response.
 
