@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=<device-width>, initial-scale=1.0">
+    <title>PrivateGPT</title>
+</head>
+<body>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            padding: 0;
+            margin: 0;
+            background-color: rgb(183, 183, 183);
+        }
+        main {
+            display: grid;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            padding: 0.5rem;
+            font-size: 105%;
+            grid-template-columns: 40% 10% 50%;
+            grid-template-rows: 8rem 5rem auto 8rem;
+            grid-template-areas: 'header header header'
+                                 'query run answer'
+                                 'sources sources answer'
+                                 'footer footer footer';
+        }
+        header {
+            grid-area: header;
+            text-align: center;
+            border-bottom: 2px black solid;
+            padding: 0.5rem;
+        }
+        .query {
+            grid-area: query;
+            border: 1px black solid;
+            padding: 0.5rem;
+            font-size: 105%;
+        }
+        .query textarea {
+            resize: none;
+            overflow-y: auto;
+            height: 100%;
+            width: 100%;
+            font-size: 105%;
+        }
+        .run {
+            grid-area: run;
+            border: 1px black solid;
+            padding: 0.5rem;
+        }
+        button {
+            margin: 0.2rem;
+        }
+        .answer {
+            grid-area: answer;
+            overflow-y: auto;
+            border: 2px black solid;
+            padding: 0.5rem;
+            font-size: 105%;
+        }
+        .sources {
+            grid-area: sources;
+            overflow-y: auto;
+            border: 1px black solid;
+            padding: 0.5rem;
+            font-size: 105%;
+        }
+        footer {
+            grid-area: footer;
+            font-size: 70%;
+            padding: 0.5rem;
+        }
+       
+
+    </style>
+    <main>
+        <header>
+            <h1>PrivateGPT Web Interface</h1>
+        </header>
+        <div class="query">
+            <textarea id="query"></textarea>
+        </div>
+        <div class="run">
+            <button onclick="Run()">Run Query</button><br>
+            <button onclick="Kill()">Terminate</button>
+        </div>
+        <div class="sources"></div>
+        <div class="answer"></div>
+        <footer>
+            &copy; By: Cedar Creek Technologies, LLC. 
+            License <a href='https://www.gnu.org/licenses/gpl-3.0.en.html'>GPL-3.0</a>.
+        </footer>
+    </main>
+    <script>
+        const sources = document.querySelector(".sources")
+        const answer = document.querySelector(".answer")
+        const query = document.querySelector("#query")
+        async function Run()
+        {
+            sources.textContent = ""
+            answer.textContent = ""
+            let q = query.value
+            try {
+                const payload = { query: q };
+
+                const response = await fetch('/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    // Process the response data
+                    let str = data.answer.replace(/\n/g,"<br><br>")
+                    answer.innerHTML = str
+                    let arr = data.source_documents
+
+                    console.log(arr)
+                    for(let i=0;i<arr.length;i++)
+                    {
+                        const itm = arr[i]
+                        // const str = itm.replace(/\n/g,"<br>")
+                        sources.innerHTML += `<p>${i}: ${itm.source}</p>`
+                    }
+                    // sources.HTML = data.source_documents.toString().replace(/\n/g,"<br><br>")
+                    console.log(data);
+                } 
+                else {
+                    throw new Error('Error: ' + response.status);
+                }
+            } 
+            catch (error) {
+                // Handle any errors
+                console.error('Request failed:', error.message);
+            }
+        }
+
+        async function Kill()
+        {
+            const response = await fetch('/terminate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: ""
+                });
+        }
+        
+</script>
+</body>
+</html>
